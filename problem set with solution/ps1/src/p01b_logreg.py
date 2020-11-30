@@ -21,7 +21,7 @@ def main(train_path, eval_path, pred_path):
     # Plot decision boundary on top of validation set set
     x_val, y_val = util.load_dataset(eval_path, add_intercept=True)
     y_pred = model.predict(x_val)
-    util.plot(x_val, y_val, model.theta, '{}.png'.format(pred_path))
+    util.plot(x_val, y_val, model.theta, pred_path + ".png")
 
     # Use np.savetxt to save predictions on eval set to pred_path
     np.savetxt(pred_path, y_pred, fmt="%.4f")
@@ -42,23 +42,29 @@ class LogisticRegression(LinearModel):
         m, n = x.shape
 
         # initialize theta
-        if self.theta is None:
-            self.theta = np.zeros(n)
+        self.theta = np.zeros(n)
 
         # optimize theta
-        # for i in range(self.max_iter):
         while True:
             theta = self.theta
-            # compute J
-            J = - (1 / m) * (y - g(x.dot(theta))).dot(x)
+
+            # compute gradient
+            gradient = np.zeros(n)
+            for i in range(m):
+                h_theta_xi = g(np.dot(theta, x[i]))
+                gradient += (y[i] - h_theta_xi) * x[i]
+            gradient = gradient * (-1/m)
 
             # compute H
-            x_theta = x.dot(theta)
-            H = (1 / m) * g(x_theta).dot(g(1 - x_theta)) * (x.T).dot(x)
-            H_inv = np.linalg.inv(H)
+            hessian = np.zeros((n,n))
+            for i in range(m):
+                h_theta_xi = g(np.dot(theta, x[i]))
+                hessian += h_theta_xi * (1 - h_theta_xi) * np.tensordot(x[i], x[i], 0)
+            hessian = hessian * (1/m)
+            hessian_inv = np.linalg.inv(hessian)
 
             # update
-            self.theta = theta - H_inv.dot(J)
+            self.theta = theta - (self.step_size * np.dot(hessian_inv, gradient))
 
             # if norm is small, terminate
             if np.linalg.norm(self.theta - theta, ord=1) < self.eps:
@@ -75,6 +81,9 @@ class LogisticRegression(LinearModel):
         """
         # compute probability
         g = lambda x: 1 / (1 + np.exp(-x))
-        preds = g(x.dot(self.theta))
+        m, n = x.shape
+        preds = np.zeros(m)
+        for i in range(m):
+            preds[i] = g(np.dot(x[i], self.theta))
 
         return preds
