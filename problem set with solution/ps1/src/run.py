@@ -29,3 +29,15 @@ p03(lr=1e-7,
     train_path='../data/ds4_train.csv',
     eval_path='../data/ds4_valid.csv',
     pred_path='output/p03d_pred.txt')
+
+from p05b_lwr import main as p05b
+p05b(tau=5e-1,
+     train_path='../data/ds5_train.csv',
+     eval_path='../data/ds5_valid.csv')
+
+from p05c_tau import main as p05c
+p05c(tau_values=[3e-2, 5e-2, 1e-1, 5e-1, 1e0, 1e1],
+     train_path='../data/ds5_train.csv',
+     valid_path='../data/ds5_valid.csv',
+     test_path='../data/ds5_test.csv',
+     pred_path='output/p05c_pred.txt')
